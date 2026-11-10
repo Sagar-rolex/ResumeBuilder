@@ -36,6 +36,10 @@ img {
     --border-color: #e2e8f0;
     --card-bg: #ffffff;
     --input-bg: #ffffff;
+    --input-text: #111827;
+    --input-placeholder: #94a3b8;
+    --input-border: #cbd5e1;
+    --input-focus: #2563eb;
   }
 
   .dark {
@@ -46,12 +50,65 @@ img {
     --border-color: #334155;
     --card-bg: #1e293b;
     --input-bg: #334155;
+    /* Inputs on light cards must remain dark even when the page theme is dark. */
+    --input-text: #111827;
+    --input-placeholder: #94a3b8;
+    --input-border: #cbd5e1;
+    --input-focus: #2563eb;
   }
 
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
   }
+}
+
+/*
+ * Form controls inherit their color from body. In dark mode that color is
+ * light, while many dialogs and forms still use white input surfaces. Give
+ * editable controls an explicit readable default instead of relying on the
+ * surrounding page's text color. Keep checkbox/radio/range/color controls
+ * native, and retain explicit white text for dark-surface controls.
+ */
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), textarea, select) {
+  color: var(--input-text, #111827);
+  caret-color: var(--input-text, #111827);
+  border-color: var(--input-border, #cbd5e1);
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), textarea, select)::placeholder {
+  color: var(--input-placeholder, #94a3b8);
+  opacity: 1;
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), textarea, select):focus {
+  border-color: var(--input-focus, #2563eb);
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), textarea, select):disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), textarea, select):read-only {
+  cursor: default;
+}
+
+/* Tailwind's explicit dark:text-white is used on controls with dark surfaces. */
+.dark :where(input[class~="dark:text-white"], textarea[class~="dark:text-white"], select[class~="dark:text-white"]) {
+  color: #ffffff;
+  caret-color: #ffffff;
+}
+
+/* Chrome autofill can paint its own text color; follow the control's computed color. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: currentColor;
+  caret-color: currentColor;
+  transition: background-color 9999s ease-out 0s;
 }
 
 /* ── Targeted transitions (NOT on everything) ──────────────────────── */
