@@ -5,7 +5,25 @@ const baseURL = import.meta.env.VITE_BASE_URL || "http://localhost:3000/api";
 const api = axios.create({
   baseURL,
   withCredentials: true,
+  // Render's free instances can take a short while to wake. Still fail cleanly
+  // if the API never responds so auth forms cannot remain in a loading state.
+  timeout: 60_000,
 });
+
+export const getApiErrorMessage = (error, fallback = "The request failed. Please try again.") => {
+  const serverMessage = error?.response?.data?.message;
+  if (typeof serverMessage === "string" && serverMessage.trim()) return serverMessage;
+
+  if (error?.code === "ECONNABORTED" || error?.code === "ETIMEDOUT") {
+    return "The server took too long to respond. Please try again.";
+  }
+
+  if (error?.message === "Network Error") {
+    return "Could not reach the server. Please check your connection and try again.";
+  }
+
+  return error?.message || fallback;
+};
 
 // Normalize request URLs so callers can use either "/users/..." or "/api/users/..."
 // If a caller already included a leading "/api" prefix, strip it so the baseURL isn't duplicated.

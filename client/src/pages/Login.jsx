@@ -1,6 +1,6 @@
 import { Lock, Mail, User2Icon, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import React from "react";
-import api from "@/api";
+import api, { getApiErrorMessage } from "@/api";
 import { useDispatch } from "react-redux";
 import { login } from "../app/features/authSlice";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -70,7 +70,7 @@ const Login = () => {
       const isAppPath = nextPath === "/app" || nextPath?.startsWith("/app/") || nextPath?.startsWith("/app?");
       navigate(isAppPath ? nextPath : data.user?.role === "admin" ? "/admin/dashboard" : "/app");
     } catch (error) {
-      toast.error(error?.response?.data?.message || error.message);
+      toast.error(getApiErrorMessage(error, "Authentication failed. Please try again."));
     } finally {
       setLoading(false);
     }

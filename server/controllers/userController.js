@@ -13,6 +13,20 @@ const generateToken = (userId) =>
 // ── Validation helpers ──────────────────────────────────────────────
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+const logRegistrationError = (error) => {
+  const message = String(error?.message || "Registration operation failed")
+    .replace(/mongodb(?:\+srv)?:\/\/[^\s"']+/gi, "[MongoDB URI redacted]")
+    .replace(/(password|token|authorization|api[_-]?key)\s*[:=]\s*[^,\s;]+/gi, "$1=[redacted]")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email redacted]")
+    .slice(0, 240);
+
+  console.error("registerUser failed", {
+    name: error?.name || "Error",
+    code: typeof error?.code === "string" || Number.isInteger(error?.code) ? error.code : undefined,
+    message,
+  });
+};
+
 // POST: /api/users/register
 export const registerUser = async (req, res) => {
   try {
@@ -37,7 +51,7 @@ export const registerUser = async (req, res) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const existingUser = await User.findOne({ email: cleanEmail });
+    const existingUser = await User.findOne({ email: cleanEmail }).maxTimeMS(5_000);
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -56,11 +70,14 @@ export const registerUser = async (req, res) => {
 
     return res.status(201).json({ message: "User created successfully", token, user: userResponse });
   } catch (error) {
-    console.error("registerUser error:", error.message);
+    logRegistrationError(error);
     if (error.code === 11000) {
       return res.status(409).json({ message: "User already exists" });
     }
-    return res.status(400).json({ message: error.message });
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: "Please review the registration details and try again." });
+    }
+    return res.status(500).json({ message: "Registration is temporarily unavailable. Please try again." });
   }
 };
 

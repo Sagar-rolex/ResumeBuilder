@@ -15,7 +15,9 @@ const connectDB = async () => {
 
     await mongoose.connect(mongodbURI, {
       dbName: projectName,
+      connectTimeoutMS: 10_000,
       serverSelectionTimeoutMS: 10000,
+      bufferTimeoutMS: 10_000,
     });
   } catch (error) {
     console.error("Error connecting to MongoDB:", error.message || error);

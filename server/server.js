@@ -22,16 +22,32 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());
 
 // ── CORS with explicit allowed origins ──────────────────────────────
-const allowedOrigins = [
-  process.env.CLIENT_URL || "http://localhost:5173",
+const normalizeOrigin = (value) => {
+  try {
+    return new URL(value.trim()).origin;
+  } catch {
+    return "";
+  }
+};
+const configuredClientOrigins = [
+  process.env.CLIENT_URL,
+  ...(process.env.CLIENT_URLS || "").split(","),
+]
+  .filter(Boolean)
+  .map(normalizeOrigin)
+  .filter(Boolean);
+const allowedOrigins = new Set([
+  ...configuredClientOrigins,
   "http://127.0.0.1:5173",
-];
+  ...(configuredClientOrigins.length ? [] : ["http://localhost:5173"]),
+]);
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.has(normalizeOrigin(origin))) {
         callback(null, true);
       } else {
+        console.warn("CORS rejected origin", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },

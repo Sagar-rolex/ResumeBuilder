@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { X, Lock, Mail, User2Icon, Eye, EyeOff } from "lucide-react";
-import api from "@/api";
+import api, { getApiErrorMessage } from "@/api";
 import { login } from "../app/features/authSlice";
 import toast from "react-hot-toast";
 import PasswordRequirements from "./PasswordRequirements";
@@ -46,7 +46,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess }) => {
       if (onSuccess) onSuccess(data);
       onClose();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Authentication failed");
+      toast.error(getApiErrorMessage(error, "Authentication failed. Please try again."));
     } finally {
       setLoading(false);
     }

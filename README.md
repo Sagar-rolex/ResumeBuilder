@@ -268,3 +268,9 @@ GitHub: [@Sagar-rolex](https://github.com/Sagar-rolex)
 ## License
 
 This project is available for personal and educational use. Add a formal license file if you intend to specify reuse and distribution permissions.
+
+### Current production URLs
+
+- Frontend: https://resume-builder-seven-jet.vercel.app
+- Backend: https://resumebuilder-jbs4.onrender.com
+- Set Render CLIENT_URL to the frontend origin exactly, including the hyphen: https://resume-builder-seven-jet.vercel.app.
